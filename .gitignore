@@ -1,0 +1,25 @@
+# Your actual configuration — contains your MEDIA_PATH. Never commit this;
+# .env.example is the template that ships in the repo instead.
+.env
+
+# Your actual chat data if it ever ends up next to the project instead of
+# wherever MEDIA_PATH points — photos, videos, audio, and the database.
+ChatData/
+data/
+media/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Electron build output — GitHub Actions creates this fresh each time,
+# no reason to store it in the repo itself.
+dist/
+
+# OS junk
+.DS_Store
+Thumbs.db

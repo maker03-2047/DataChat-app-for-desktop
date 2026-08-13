@@ -1,0 +1,17 @@
+services:
+  chatapp:
+    build: ./backend
+    container_name: self-hosted-chat
+    ports:
+      - "8080:3000"
+    environment:
+      - MEDIA_DIR=/app/media
+      - DATA_DIR=/app/data
+      - PORT=3000
+    volumes:
+      # Everything the app stores lives inside the one folder you choose via
+      # MEDIA_PATH in the .env file: your uploaded photos/videos/audio go in
+      # its root, and the message database goes in a "database" subfolder.
+      - ${MEDIA_PATH}:/app/media
+      - ${MEDIA_PATH}/database:/app/data
+    restart: unless-stopped
