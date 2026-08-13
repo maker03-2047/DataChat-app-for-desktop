@@ -1,0 +1,40 @@
+name: Build desktop app
+
+# Runs automatically every time you push to GitHub, and can also be run
+# manually from the "Actions" tab on GitHub if you ever want to rebuild
+# without pushing a change.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the installer
+        run: npm run dist
+
+      - name: Upload the finished installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: keepsake-${{ matrix.os }}
+          path: |
+            dist/*.dmg
+            dist/*.exe
+          if-no-files-found: warn
