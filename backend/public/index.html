@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Keepsake — your chats</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23FBF7EF'/%3E%3Cpath d='M6 8h12M6 12h12M6 16h7' stroke='%23C9A24B' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <div id="sidebarHeader">
+        <div id="brandRow">
+          <span id="brandMark">✒️</span>
+          <h1 id="appTitle" contenteditable="true" spellcheck="false" title="Click to rename this app"></h1>
+        </div>
+        <button id="newChatBtn">+ New chat</button>
+      </div>
+      <div id="chatList"></div>
+      <div id="rootDropZone">Drop here to move to top level</div>
+      <button id="compactDbBtn" title="Reclaim unused space in the database file">Compact database</button>
+    </aside>
+
+    <main id="chatWindow">
+      <div id="emptyState">
+        <div class="stub">Nothing open</div>
+        <p>Pick a chat from the list, or start a new one.</p>
+      </div>
+
+      <div id="activeChat" class="hidden">
+        <header id="chatHeader">
+          <div id="normalHeader">
+            <label id="avatarLabel" title="Change picture">
+              <span id="chatAvatarWrap">
+                <img id="chatAvatar" src="" alt="" />
+                <span id="chatAvatarFallback"></span>
+                <span id="avatarEditBadge">
+                  <svg viewBox="0 0 20 20" fill="none"><path d="M4 14.5V16h1.5l8.4-8.4-1.5-1.5L4 14.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M13.5 5l1.5-1.5 1.5 1.5-1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                </span>
+              </span>
+              <input type="file" id="avatarInput" accept="image/*" hidden />
+            </label>
+            <div id="chatHeaderText">
+              <div id="chatNameRow">
+                <div id="chatNameView" title="Click to rename &amp; style"></div>
+                <input id="chatNameInput" type="text" class="hidden" />
+                <button id="editNameBtn" class="iconBtn" title="Rename & style">
+                  <svg viewBox="0 0 20 20" fill="none"><path d="M4 14.5V16h1.5l8.4-8.4-1.5-1.5L4 14.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M13.5 5l1.5-1.5 1.5 1.5-1.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+              <div id="chatNameToolbar" class="toolPill hidden">
+                <button id="nameBoldBtn" class="toolBtn" title="Bold (*text*)"><b>B</b></button>
+                <button id="nameItalicBtn" class="toolBtn" title="Italic (_text_)"><i>I</i></button>
+                <span class="toolDivider"></span>
+                <button id="nameStrikeBtn" class="toolBtn" title="Strikethrough — pick a color"><s>S</s></button>
+                <button id="nameHighlightBtn" class="toolBtn" title="Highlight — pick a color">
+                  <svg viewBox="0 0 20 20" fill="none"><path d="M6 14.5 4 17l2.5-.5L9 14M12.5 4.5l3 3-6.8 6.8-3.8.8.8-3.8 6.8-6.8Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                </button>
+                <button id="nameColorBtn" class="toolBtn" title="Text color — pick a color">
+                  <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="1.4"/></svg>
+                </button>
+                <span class="toolDivider"></span>
+                <button id="nameFontBtn" class="toolBtn" title="Font — pick from a list">Aa</button>
+                <button id="nameSizeBtn" class="toolBtn" title="Size — pick from a list">
+                  <svg viewBox="0 0 20 20" fill="none"><path d="M4 15V6l3 9V6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 15l3-9 3 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <span class="toolDivider"></span>
+                <button id="nameEraserBtn" class="toolBtn" title="Remove formatting from selection">
+                  <svg viewBox="0 0 20 20" fill="none"><path d="M9 4.5 15.5 11l-5 5H7L3.5 12.5a1.5 1.5 0 0 1 0-2.1L9 4.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7 16h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <span id="chatSub"></span>
+            </div>
+            <input type="text" id="searchInput" placeholder="Search this chat…" />
+            <button id="selectModeBtn" title="Select messages">
+              <svg viewBox="0 0 20 20" fill="none"><rect x="3.5" y="3.5" width="13" height="13" rx="3" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 10l2.2 2.2L14 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button id="deleteChatBtn" title="Delete this chat">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M4 6h12M8 6V4.6c0-.6.4-1 1-1h2c.6 0 1 .4 1 1V6m-7 0 .7 9.3c.05.7.6 1.2 1.3 1.2h5c.7 0 1.25-.5 1.3-1.2L15 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <div id="selectionBar" class="hidden">
+            <button id="exitSelectionBtn" title="Cancel selection">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5 5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
+            <span id="selectionCount">0 selected</span>
+            <div id="selectionActions">
+              <button id="selectionCopyBtn" title="Copy selected">
+                <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-7A1.5 1.5 0 0 0 3 5.5v7A1.5 1.5 0 0 0 4.5 14H7" stroke="currentColor" stroke-width="1.4"/></svg>
+                <span>Copy</span>
+              </button>
+              <button id="selectionDeleteBtn" class="danger" title="Delete selected">
+                <svg viewBox="0 0 20 20" fill="none"><path d="M4 6h12M8 6V4.6c0-.6.4-1 1-1h2c.6 0 1 .4 1 1V6m-7 0 .7 9.3c.05.7.6 1.2 1.3 1.2h5c.7 0 1.25-.5 1.3-1.2L15 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div id="messages"></div>
+
+        <footer id="composer">
+          <div id="toolbarRow">
+            <div class="toolPill">
+              <button id="boldBtn" class="toolBtn" title="Bold (*text*)"><b>B</b></button>
+              <button id="italicBtn" class="toolBtn" title="Italic (_text_)"><i>I</i></button>
+              <span class="toolDivider"></span>
+              <button id="strikeBtn" class="toolBtn" title="Strikethrough — pick a color"><s>S</s></button>
+              <button id="highlightBtn" class="toolBtn" title="Highlight — pick a color">
+                <svg viewBox="0 0 20 20" fill="none"><path d="M6 14.5 4 17l2.5-.5L9 14M12.5 4.5l3 3-6.8 6.8-3.8.8.8-3.8 6.8-6.8Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              </button>
+              <button id="colorBtn" class="toolBtn" title="Text color — pick a color">
+                <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="1.4"/></svg>
+              </button>
+              <span class="toolDivider"></span>
+              <button id="fontBtn" class="toolBtn" title="Font — pick from a list">Aa</button>
+              <button id="sizeBtn" class="toolBtn" title="Size — pick from a list">
+                <svg viewBox="0 0 20 20" fill="none"><path d="M4 15V6l3 9V6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 15l3-9 3 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <span class="toolDivider"></span>
+              <button id="eraserBtn" class="toolBtn" title="Remove formatting from selection">
+                <svg viewBox="0 0 20 20" fill="none"><path d="M9 4.5 15.5 11l-5 5H7L3.5 12.5a1.5 1.5 0 0 1 0-2.1L9 4.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7 16h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+            <div class="toolPill toolPillRight">
+              <div class="fieldGroup">
+                <span class="fieldLabel">Sender</span>
+                <input type="text" id="senderInput" value="Me" />
+              </div>
+              <div class="fieldGroup">
+                <span class="fieldLabel">Stamped</span>
+                <input type="datetime-local" id="timestampInput" />
+              </div>
+            </div>
+          </div>
+          <p class="toolbarHint">Select text first, then click a button — or type <code>*bold*</code> / <code>_italic_</code> directly.</p>
+          <div id="pendingFileChip" class="hidden">
+            <span id="pendingFileThumb"></span>
+            <span id="pendingFileName"></span>
+            <button id="pendingFileRemove" title="Remove attachment">×</button>
+          </div>
+          <div id="inputRow">
+            <label class="fileBtn" title="Attach image, video, audio or file">
+              <svg viewBox="0 0 20 20" fill="none"><path d="M13.5 6.5 8 12a2 2 0 1 0 2.8 2.8L16.3 9.3a3.5 3.5 0 1 0-5-5L5.8 9.8a5 5 0 1 0 7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <input type="file" id="fileInput" hidden />
+            </label>
+            <textarea id="textInput" class="richInput" placeholder="Write what's on your mind… (Enter to send, Shift+Enter for a new line)" rows="1"></textarea>
+            <button id="sendBtn">Send</button>
+          </div>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <div id="colorPopup" class="colorPopupOverlay hidden">
+    <div class="colorPopupBox">
+      <span class="eyebrow" id="colorPopupTitle">Choose a color</span>
+      <div class="swatchGrid" id="swatchGrid"></div>
+    </div>
+  </div>
+
+  <div id="chatMenu" class="chatMenuPopup hidden"></div>
+
+  <div id="editModal" class="modalOverlay hidden">
+    <div class="modalBox">
+      <span class="eyebrow" id="editEyebrow">Edit entry</span>
+      <div id="editToolbar" class="toolbarRow">
+        <div class="toolPill">
+          <button id="editBoldBtn" class="toolBtn" title="Bold (*text*)"><b>B</b></button>
+          <button id="editItalicBtn" class="toolBtn" title="Italic (_text_)"><i>I</i></button>
+          <span class="toolDivider"></span>
+          <button id="editStrikeBtn" class="toolBtn" title="Strikethrough — pick a color"><s>S</s></button>
+          <button id="editHighlightBtn" class="toolBtn" title="Highlight — pick a color">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M6 14.5 4 17l2.5-.5L9 14M12.5 4.5l3 3-6.8 6.8-3.8.8.8-3.8 6.8-6.8Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </button>
+          <button id="editColorBtn" class="toolBtn" title="Text color — pick a color">
+            <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="1.4"/></svg>
+          </button>
+          <span class="toolDivider"></span>
+          <button id="editFontBtn" class="toolBtn" title="Font — pick from a list">Aa</button>
+          <button id="editSizeBtn" class="toolBtn" title="Size — pick from a list">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M4 15V6l3 9V6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 15l3-9 3 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span class="toolDivider"></span>
+          <button id="editEraserBtn" class="toolBtn" title="Remove formatting from selection">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M9 4.5 15.5 11l-5 5H7L3.5 12.5a1.5 1.5 0 0 1 0-2.1L9 4.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7 16h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+      </div>
+      </div>
+      <p class="toolbarHint">Select text first, then click a button — or type <code>*bold*</code> / <code>_italic_</code> directly.</p>
+      <textarea id="editContent" class="richInput" rows="4"></textarea>
+      <div class="modalGrid">
+        <label>Sender <input type="text" id="editSender" /></label>
+        <label>Stamped <input type="datetime-local" id="editTimestamp" /></label>
+      </div>
+      <div class="modalActions">
+        <button id="editCancelBtn">Cancel</button>
+        <button id="editSaveBtn">Save changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
