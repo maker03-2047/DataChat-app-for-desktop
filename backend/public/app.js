@@ -571,6 +571,44 @@ rootDropZone.addEventListener('drop', async (e) => {
 });
 
 const chatMenu = document.getElementById('chatMenu');
+
+// A real in-app dialog, used instead of window.prompt() — Electron's
+// desktop shell doesn't implement prompt() at all (alert/confirm work,
+// prompt silently does nothing), so relying on it broke every "name this
+// chat" flow in the packaged app. This works identically in the browser
+// and in Electron, and looks better than the browser's native prompt too.
+function showTextPrompt(title, defaultValue = '') {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('textPromptModal');
+    const titleEl = document.getElementById('textPromptTitle');
+    const input = document.getElementById('textPromptInput');
+    const okBtn = document.getElementById('textPromptOkBtn');
+    const cancelBtn = document.getElementById('textPromptCancelBtn');
+
+    titleEl.textContent = title;
+    input.value = defaultValue;
+    modal.classList.remove('hidden');
+    input.focus();
+    input.select();
+
+    function cleanup(result) {
+      modal.classList.add('hidden');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      input.removeEventListener('keydown', onKeydown);
+      resolve(result);
+    }
+    function onOk() { cleanup(input.value.trim() || null); }
+    function onCancel() { cleanup(null); }
+    function onKeydown(e) {
+      if (e.key === 'Enter') { e.preventDefault(); onOk(); }
+      if (e.key === 'Escape') { e.preventDefault(); onCancel(); }
+    }
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    input.addEventListener('keydown', onKeydown);
+  });
+}
 let menuAnchor = null;
 
 // items: [{ icon, label, action, danger }]
@@ -621,8 +659,8 @@ function openChatMenu(chat, anchorBtn) {
         await loadChats();
       } },
     { icon: ICON_PLUS, label: 'New chat inside', action: async () => {
-        const name = prompt('Name this new chat inside "' + stripMarkup(chat.name) + '":');
-        if (!name || !name.trim()) return;
+        const name = await showTextPrompt('Name this new chat inside "' + stripMarkup(chat.name) + '"');
+        if (!name) return;
         const res = await fetch(`${API}/chats`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, parent_id: chat.id })
@@ -645,8 +683,8 @@ function openChatMenu(chat, anchorBtn) {
 }
 
 document.getElementById('newChatBtn').addEventListener('click', async () => {
-  const name = prompt('Name this chat (e.g. "Work", "Family", "Project X"):');
-  if (!name || !name.trim()) return;
+  const name = await showTextPrompt('Name this chat (e.g. "Work", "Family", "Project X")');
+  if (!name) return;
   const res = await fetch(`${API}/chats`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name })
